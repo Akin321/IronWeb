@@ -1,16 +1,12 @@
 package com.example.demo.controller;
 
 import java.math.BigDecimal;
+
 import java.math.RoundingMode;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -330,7 +326,6 @@ public class CheckoutController {
 	 
 	 @PostMapping("/wallet/pay")
 	 public ResponseEntity<?> payWithWallet(@RequestBody Map<String, Object> data,HttpSession session) {
-		    BigDecimal amount = new BigDecimal(data.get("amount").toString());
 	     NewUserModel user=getCurrentUserId();
 		 if(user==null) {
 			 return ResponseEntity.badRequest().body("User not found");

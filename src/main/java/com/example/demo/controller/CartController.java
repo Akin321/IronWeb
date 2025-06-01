@@ -322,7 +322,7 @@ public class CartController {
 			return ResponseEntity.ok("coupon Applied");
 		}
 		catch(Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Server down");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Server down pls try again");
 		}
 	}
 	@GetMapping("/cancelCoupon")
