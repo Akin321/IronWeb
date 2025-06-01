@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html 
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Add Collection</title>
+ <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .table img {
+            max-width: 100px;
+            height: auto;
+        }
+    </style>    
+</head>
+<body>
+
+    <div layout:fragment="content" class="m-5 w-100">
+    
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Banner List</h2>
+        <a href="/admin/add-banner" class="btn btn-primary">Add Banner</a>
+    </div>
+      <div class="alert alert-info" role="alert" style="max-width: 600px; margin-bottom: 20px;">
+        Note: Only 5 active banners can be present.
+    </div>
+
+    <table class="table table-bordered table-hover bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Image</th>
+                <th>Display Order</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="banner, iStat : ${banners}">
+                <td th:text="${iStat.index + 1}"></td>
+                <td th:text="${banner.title}"></td>
+                <td th:text="${banner.description}"></td>
+                <td><img th:src="@{${banner.imageUrl}}" alt="Banner Image" /></td>
+                <td th:text="${banner.displayOrder}"></td>
+                <td>
+                    <span th:text="${banner.enabled} ? 'Enabled' : 'Disabled'" 
+                          th:classappend="${banner.enabled} ? 'text-success' : 'text-danger'"></span>
+                </td>
+                <td>
+                    <a th:if="${banner.enabled}" th:href="@{/admin/edit-banner/{id}(id=${banner.id})}" class="btn btn-sm btn-warning me-1">Edit</a>
+
+            
+                        <button type="submit" th:onclick="updateStatus([[${banner.enabled}]],[[${banner.id}]])" 
+                                th:class="${banner.enabled} ? 'btn btn-sm btn-danger' : 'btn btn-sm btn-success'"
+                                th:text="${banner.enabled} ? 'Disable' : 'Enable'">
+                        </button>
+             
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    
+     	<nav aria-label="Page navigation example" class="d-flex justify-content-center align-items-center">
+  <ul class="pagination" th:if="${totalPages > 1}">
+
+    <!-- Previous Button -->
+    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+        <a class="page-link" th:href="@{'/admin/view-banner'(page=${currentPage - 1})}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+    </li>
+
+    <!-- Page Numbers -->
+    <li class="page-item"
+        th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+        th:classappend="${i} == ${currentPage} ? 'active'">
+        <a class="page-link" th:href="@{'/admin/view-banner'(page=${i})}" th:text="${i + 1}"></a>
+    </li>
+
+    <!-- Next Button -->
+    <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+        <a class="page-link" th:href="@{'/admin/view-banner'(page=${currentPage + 1})}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+    </li>
+
+</ul>
+
+</nav>
+    <script>
+    function updateStatus(enabled,id){
+    	  Swal.fire({
+              title: 'Are you sure?',
+              text: `Do you really want to ${enabled ? 'disable' : 'enable'} this banner?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#28a745',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, update it!'
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  const url = `/admin/banner/updateStatus?enabled=${enabled}&id=${id}`;
+                  fetch(url, { method: 'POST' })
+                      .then(response => {
+                          if (!response.ok) {
+                              return response.text().then(errorMessage => {
+                                  Swal.fire({
+                                      icon: 'error',
+                                      title: 'Update Failed',
+                                      text: errorMessage
+                                  });
+                              });
+                          } else {
+                      
+                                  window.location.reload();
+                        
+                          }
+                      })
+                      .catch(error => {
+                          Swal.fire({
+                              icon: 'error',
+                              title: 'Error',
+                              text: 'Something went wrong. Please try again later.'
+                          });
+                          console.error('Fetch error:', error);
+                      });
+              }
+          });
+    }
+    </script>
+    </div>
+
+</body>
+</html>

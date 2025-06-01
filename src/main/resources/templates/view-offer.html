@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html 
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Offer</title>
+       
+    
+</head>
+<body>
+
+    <div layout:fragment="content" class="m-5 w-100">
+     <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Category Offers</h3>
+        <a href="/admin/add/cat-offer" class="btn btn-success">+ Add Category Offer</a>
+    </div>
+
+    <!-- Search Bar -->
+   <!-- Search Bar -->
+<div class="input-group mb-4 position-relative" style="max-width: 400px;">
+    <input type="text" id="searchInput" class="form-control" th:value="${keyword}" placeholder="Search by category name..." oninput="toggleClearButton()" />
+    
+    <!-- Clear (×) Button -->
+    <button type="button" id="clearSearchBtn" class="btn btn-outline-secondary d-none" onclick="clearSearch()">
+        &times;
+    </button>
+
+    <button class="btn btn-outline-secondary" type="button" onclick="searchOffers()">Search</button>
+</div>
+
+
+    <!-- Offers Table -->
+    <table class="table table-bordered table-hover" id="offerTable">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Category</th>
+                  <th>Gender</th>
+                
+                <th>Offer Name</th>
+                <th>Discount (%)</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="offer, stat : ${offers}">
+                <td th:text="${stat.count}"></td>
+                <td th:text="${offer.productType.name}"></td>
+                 <td th:text="${offer.productType.gender}"></td> 
+                <td th:text="${offer.offerName}"></td>  
+                <td th:text="${offer.categoryOffer}"></td>
+                <td>
+                    <span th:text="${offer.status}" 
+                          th:classappend="${offer.status.name() == 'Active'} ? 'badge bg-success' : 'badge bg-secondary'">
+                    </span>
+                </td>
+                <td>
+                    <a th:href="@{/admin/edit-offer/{id}(id=${offer.id})}" class="btn btn-primary btn-sm">Edit</a>
+                    <a  
+                       class="btn btn-warning btn-sm"  th:onclick="changeStatus([[${offer.id}]])" 
+                       th:text="${offer.status.name() == 'Active'} ? 'Disable' : 'Activate'">
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+<nav aria-label="Page navigation example" class="d-flex justify-content-center align-items-center">
+  <ul class="pagination" th:if="${totalPages > 1}">
+
+    <!-- Previous Button -->
+    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+        <a class="page-link" th:href="@{'/admin/view-offers'(page=${currentPage - 1},keyword=${keyword})}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+    </li>
+
+    <!-- Page Numbers -->
+    <li class="page-item"
+        th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+        th:classappend="${i} == ${currentPage} ? 'active'">
+        <a class="page-link" th:href="@{'/admin/view-offers'(page=${i},keyword=${keyword})}" th:text="${i + 1}"></a>
+    </li>
+
+    <!-- Next Button -->
+    <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+        <a class="page-link" th:href="@{'/admin/view-offers'(page=${currentPage + 1},keyword=${keyword})}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+    </li>
+
+</ul>
+
+</nav>
+
+<script>
+   function searchOffers() {
+        const input = document.getElementById("searchInput").value.toLowerCase();
+    	window.location.href=`/admin/view-offers?keyword=${input}`;
+    }
+
+    function toggleClearButton() {
+        const input = document.getElementById("searchInput").value;
+        const clearBtn = document.getElementById("clearSearchBtn");
+        clearBtn.classList.toggle("d-none", input === "");
+    }
+
+    function clearSearch() {
+        document.getElementById("searchInput").value = "";
+        toggleClearButton();
+        searchOffers(); // Reset view
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("searchInput");
+        const clearBtn = document.getElementById("clearSearchBtn");
+
+        // Clear the input if it has any value
+        if (input.value !== "") {
+        	clearBtn.classList.toggle("d-none", input === "");        }
+    });
+    
+    function changeStatus(id){
+    	  const offerid = parseInt(id);
+    	 Swal.fire({
+             title: "Are you sure?",
+             text: "Do you want to change the status?",
+             icon: "warning",
+             showCancelButton: true,
+             confirmButtonColor: "#3085d6",
+             cancelButtonColor: "#d33",
+             confirmButtonText: "Yes, change it!"
+         }).then((result) => {
+             if (result.isConfirmed) {
+            	 fetch(`/admin/change-offer-status/${offerid}`,{
+            		 method:'POST',
+            		 }).then(result=>{
+            			 if(result.ok){
+            				 window.location.href="/admin/view-offers";
+            			 }
+            			 else {
+                             // Handle error and extract message
+                             return result.json().then(data => {
+                                 Swal.fire("Error", data.message || "Something went wrong.", "warning");
+                             });
+                         }
+            		 })
+            			
+            	 }
+             });
+    }
+</script>
+    
+    
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html 
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Dashboard</title>
+        <link href="/css/prdform.css" rel="stylesheet">
+        <style>
+        .topPrdImg{
+        width:100%;
+        object-fit:cover;
+         object-position: top; 
+        }
+        </style>
+    
+</head>
+<body>
+
+    <div layout:fragment="content" class="m-5 w-100">
+    <div class="container my-5">
+    <h2 class="mb-4">Sales Report</h2>
+
+    <!-- Filter Form -->
+    <form id="setDate" class="row mb-3">
+        <div class="col-md-3">
+            <label class="form-label">Start Date</label>
+            <input type="date" id="startDate" name="startDate" class="form-control" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">End Date</label>
+            <input type="date" id="endDate" name="endDate" class="form-control" required>
+        </div>
+        <div class="col-md-3 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">Generate Report</button>
+        </div>
+        </form>
+        <p id="dateError" class="text-danger text-sm mb-2"></p>
+        
+        <div class="col-md-3 align-self-end mb-3">
+            <select id="rangeType" class="form-select" onChange="updateSales(this)" name="rangeType">
+                <option value="">--Quick Range--</option>
+                <option value="day">Today</option>
+                <option  value="week" selected>This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+            </select>
+        </div>
+    
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Total Orders</h6>
+                    <h4 th:text="${totalOrders}" id="totalOrders">56</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Total Sales Amount</h6>
+                    <h4 th:text="'$'+${totalSalesAmount}" id="totalSalesAmount">₹ 1,23,450</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Total Discount</h6>
+                    <h4 th:text="'$'+${totalDiscount}" id="totalDiscount">₹ 8,250</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Coupon Deduction</h6>
+                    <h4 th:text="'$'+${couponDiscount}" id="couponDiscount">₹ 4,200</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Chart -->
+    <div class="mb-5">
+        <h5>Daily Sales Chart</h5>
+        <canvas id="salesChart"    th:attr="data-sales=${salesByDate}"
+          height="100"></canvas>
+    </div>
+
+    <!-- Top Selling Products -->
+    <div class="mb-5"  th:classappend="${#lists.isEmpty(topProducts)} ? 'd-none' : ''" id="topProductsSection">
+    <h5 class="mb-3">Top Selling Products</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Rank</th>
+                    <th>Product Name</th>
+                    <th>Units Sold</th>
+                </tr>
+            </thead>
+            <tbody id="topProductsContainer">
+                <tr th:each="item, iterStat : ${topProducts}">
+                    <td th:text="${iterStat.index + 1}">1</td>
+                    <td th:text="${item.name}">Product Name</td>
+                    <td th:text="${item.sold}">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="mb-5"  th:classappend="${#lists.isEmpty(categories)} ? 'd-none' : ''" id="topcategoriesSection">
+    <h5 class="mb-3">Top Selling Categories</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Rank</th>
+                    <th>Category Name</th>
+                    <th>Units Sold</th>
+                </tr>
+            </thead>
+            <tbody id="topcategoriesContainer">
+                <tr th:each="item, iterStat : ${categories}">
+                    <td th:text="${iterStat.index + 1}">1</td>
+                    <td th:text="${item.name}">Category Name</td>
+                    <td th:text="${item.sold}">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+
+    <!-- Download Buttons -->
+    <div class="d-flex gap-3">
+        <a  class="btn btn-outline-danger" onclick="generateReport()">Download PDF</a>
+                <a  class="btn btn-outline-primary" onclick="generateLedgerBook()">Generate Ledger Book</a>
+        
+    </div>
+</div>
+
+<!-- Chart Script -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	
+<!-- Bar Chart Script -->
+<script th:inline="javascript">
+//Get the data-sales attribute string
+let salesData;
+let salesDataStr = document.getElementById('salesChart').getAttribute('data-sales');
+
+// Parse the JSON string into an object
+salesData = JSON.parse(salesDataStr);
+
+// Extract keys (dates) and values (sales amounts)
+
+function formatDate(date) {
+	  // Format a Date object to 'YYYY-MM-DD' string
+	  const year = date.getFullYear();
+	  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // month is zero-based
+	  const day = date.getDate().toString().padStart(2, '0');
+
+	  return `${year}-${month}-${day}`;
+	}
+
+let startDate;
+let endDate;
+
+const today = new Date();
+const sixDaysAgo = new Date();
+sixDaysAgo.setDate(today.getDate() - 6);
+
+startDate = formatDate(sixDaysAgo);
+endDate = formatDate(today);
+
+function updateSales(selectElement) {
+    document.getElementById("dateError").textContent = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+
+    const selectedValue = selectElement.value;
+    console.log(selectedValue);
+
+    const today = new Date();
+    let start = new Date();
+
+    if (selectedValue === "day") {
+        startDate = formatDate(today);
+        endDate = formatDate(today);
+    } else if (selectedValue === "week") {
+        start.setDate(today.getDate() - 6);
+        startDate = formatDate(start);
+        endDate = formatDate(today);
+    } else if (selectedValue === "month") {
+        start.setDate(today.getDate() - 30);
+        startDate = formatDate(start);
+        endDate = formatDate(today);
+    } else if (selectedValue === "year") {
+        start.setDate(today.getDate() - 365);
+        startDate = formatDate(start);
+        endDate = formatDate(today);
+    } else {
+        // Default case: maybe clear values or set to today
+    	start.setDate(today.getDate() - 6);
+        startDate = formatDate(start);
+        endDate = formatDate(today);
+    }
+    const url = `/admin/filter/sales?startDate=${startDate}&endDate=${endDate}`;
+
+    fetch(url,{
+    	method:'POST',
+    	}).then(response=>response.json())
+	    	  .then(data => {
+
+	              document.getElementById('totalOrders').textContent = `${data.totalOrders}`;
+	              document.getElementById('totalSalesAmount').textContent = `$${data.totalSalesAmount}`;
+              document.getElementById('totalDiscount').textContent = `$${data.totalDiscount}`;
+              document.getElementById('couponDiscount').textContent = `$${data.couponDiscount}`;
+              
+  		    salesData = data.salesByDate;
+
+              drawChart();
+              updateTopProducts(data.topProducts);
+              updateTopCategories(data.categories);
+
+
+          })
+          .catch(error => console.error('Error:', error));
+  }
+    	
+let labels = Object.keys(salesData);
+let values = Object.values(salesData);
+let salesChart;
+
+// Create bar chart
+function drawChart() {
+  const labels = Object.keys(salesData);
+  const values = Object.values(salesData);
+  const ctx = document.getElementById('salesChart').getContext('2d');
+
+  if (salesChart) {
+    // Update existing chart
+    salesChart.data.labels = labels;
+    salesChart.data.datasets[0].data = values;
+    salesChart.update();
+  } else {
+    // Create new chart
+    salesChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Sales Amount ($)',
+          data: values,
+          backgroundColor: 'rgba(13, 110, 253, 0.6)',
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: '$ Amount' }
+          },
+          x: {
+            title: { display: true, text: 'Date' }
+          }
+        }
+      }
+    });
+  }
+}
+
+drawChart();
+
+function updateTopProducts(topProducts) {
+	  const container = document.getElementById('topProductsContainer');
+	  const section = document.getElementById('topProductsSection');
+
+	  container.innerHTML = ''; // Clear existing rows
+
+	  if (!topProducts || topProducts.length === 0) {
+	    section.classList.add('d-none');
+	    return;
+	  }
+
+	  section.classList.remove('d-none');
+
+	  topProducts.forEach((product, index) => {
+	    const row = document.createElement('tr');
+	    row.innerHTML = `
+	      <td>${index + 1}</td>
+	      <td>${product.name}</td>
+	      <td>${product.sold}</td>
+	    `;
+	    container.appendChild(row);
+	  });
+	}
+
+	
+function updateTopCategories(topcategories) {
+	  const container = document.getElementById('topcategoriesContainer');
+	  const section = document.getElementById('topcategoriesSection');
+
+	  container.innerHTML = ''; // Clear existing rows
+
+	  if (!topcategories || topcategories.length === 0) {
+	    section.classList.add('d-none');
+	    return;
+	  }
+
+	  section.classList.remove('d-none');
+
+	  topcategories.forEach((category, index) => {
+	    const row = document.createElement('tr');
+	    row.innerHTML = `
+	      <td>${index + 1}</td>
+	      <td>${category.name}</td>
+	      <td>${category.sold}</td>
+	    `;
+	    container.appendChild(row);
+	  });
+	}
+
+	
+	document.getElementById("setDate").addEventListener("submit",(e)=>{
+		e.preventDefault();
+		const select = document.getElementById('rangeType');
+		  select.value = '';
+		  startDate = document.getElementById("startDate").value;
+		   endDate = document.getElementById("endDate").value;
+		    const errorElement = document.getElementById("dateError");
+		    errorElement.textContent = '';
+
+		  const url = `/admin/filter/sales?startDate=${startDate}&endDate=${endDate}`;
+
+		    fetch(url,{
+		    	method:'POST',
+		    	}).then(async (response) => {
+		    	    if (!response.ok) {
+		    	        // Extract error text from server
+		    	        const errorText = await response.text();
+		    	        document.getElementById("dateError").textContent = errorText;
+		    	        return; // Stop further execution
+		    	      }
+
+		    	      // If response is OK, parse JSON and proceed
+		    	      return response.json();
+		    	    })
+			    	  .then(data => {
+			    		  if (!data) return; 
+			              document.getElementById('totalOrders').textContent = `${data.totalOrders}`;
+			              document.getElementById('totalSalesAmount').textContent = `$${data.totalSalesAmount}`;
+		              document.getElementById('totalDiscount').textContent = `$${data.totalDiscount}`;
+		              document.getElementById('couponDiscount').textContent = `$${data.couponDiscount}`;
+		              
+		  		    salesData = data.salesByDate;
+
+		              drawChart();
+		              updateTopProducts(data.topProducts);
+		              updateTopCategories(data.categories);
+
+
+		          })
+		          .catch(() => {
+		        	  alert("Something unexpected happened");
+		        	});
+		    
+		    
+		  
+	})
+	 document.addEventListener("DOMContentLoaded", () => {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("endDate").max = today;
+    document.getElementById("startDate").max = today;
+  });
+	
+	function generateReport(){
+		  const url = `/admin/generateReport?startDate=${startDate}&endDate=${endDate}`;
+
+		fetch(url,{
+			method:'POST'
+		}) .then(response => {
+	        if (!response.ok) {
+	            throw new Error("Network response was not ok");
+	        }
+	        return response.blob(); // Receive binary data
+	    })
+	    .then(blob => {
+	        const downloadUrl = window.URL.createObjectURL(blob);
+	        const a = document.createElement("a");
+	        a.href = downloadUrl;
+	        a.download = "report.pdf";
+	        document.body.appendChild(a);
+	        a.click();
+	        a.remove();
+	    })
+	    .catch(error => {
+	        console.error("Error generating report:", error);
+	    });
+	}
+	
+	function generateLedgerBook(){
+		  const url = `/admin/generateLedgerBook?startDate=${startDate}&endDate=${endDate}`;
+
+		fetch(url,{
+			method:'POST'
+		}) .then(response => {
+	        if (!response.ok) {
+	            throw new Error("Network response was not ok");
+	        }
+	        return response.blob(); // Receive binary data
+	    })
+	    .then(blob => {
+	    	 const downloadUrl = window.URL.createObjectURL(blob);
+	         const a = document.createElement("a");
+	         a.href = downloadUrl;
+	         a.download = "ledger.xlsx";  // Correct file extension
+	         document.body.appendChild(a);
+	         a.click();
+	         a.remove();
+	    })
+	    .catch(error => {
+	        console.error("Error generating report:", error);
+	    });
+	}
+	
+</script>
+    
+    
+    </div>
+
+</body>
+</html>

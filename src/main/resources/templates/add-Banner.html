@@ -1,0 +1,174 @@
+
+    <!-- Top Bar -->
+   <!DOCTYPE html>
+<html 
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Add Banner</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        
+     body {
+        background-color: #ffffff; /* White background */
+        color: #000000; /* Black text */
+    }
+
+    .form-control, .form-select {
+        background-color: #ffffff; /* White input background */
+        color: #000000;            /* Black text */
+        border: 1px solid #ccc;    /* Light border */
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #666;
+        background-color: #ffffff;
+        color: #000000;
+        box-shadow: none;
+    }
+
+    label, .form-label {
+        color: #ffffff;
+    }
+
+    .form-control::placeholder {
+        color: #555555;
+        opacity: 1;
+    }
+
+    select.form-select option {
+        background-color: #ffffff;
+        color: #000000;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: #ffffff;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+
+    .text-danger {
+        color: #dc3545; /* Bootstrap red */
+    }
+    </style>
+</head>
+<body>
+
+<div layout:fragment="content" class="m-5 w-100">
+    <form id="bannerForm" th:object="${banner}"  enctype="multipart/form-data"
+          class="p-4 border rounded shadow bg-dark" style="max-width: 600px; margin: auto;">
+
+        <h4 class="mb-4 text-center text-white">Add Banner</h4>
+
+        <!-- Banner Title -->
+        <div class="mb-3">
+            <label for="title" class="form-label">Banner Title</label>
+            <input type="text" id="title" class="form-control" th:field="*{title}" placeholder="Enter banner title"  />
+            <span id="error-title" class="text-danger text-sm"></span>
+        </div>
+
+        <!-- Banner Description -->
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" class="form-control" th:field="*{description}" rows="3" placeholder="Enter banner description" ></textarea>
+            <span id="error-description" class="text-danger text-sm"></span>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="mb-3">
+            <label for="imageUrl" class="form-label">Upload Image</label>
+            <input type="file" id="imageUrl" class="form-control" th:field="*{imageUrl}" accept="image/*"  />
+            <span id="error-imageUrl" class="text-danger text-sm"></span>
+        </div>
+
+        <!-- Display Order -->
+        <div class="mb-3">
+            <label for="displayOrder" class="form-label">Display Order</label>
+            <select class="form-select" id="displayOrder" th:field="*{displayOrder}" >
+                <option value="" disabled selected>Select display order</option>
+                <option th:each="i :  ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
+
+            </select>
+            <span id="error-displayOrder" class="text-danger text-sm"></span>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid">
+            <button type="submit" class="btn btn-success mb-2">Add Banner</button>
+            <a href="/admin/view-banner" type="button" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+    
+    <script>
+    document.getElementById("bannerForm").addEventListener("submit",(e)=>{
+    	e.preventDefault();
+    	const form=document.getElementById("bannerForm");
+    	const formData=new FormData(form);
+    	fetch('/admin/verify-banner',{
+    		method:'POST',
+    		body:formData
+    	}).then(response=>{
+    		if(!response.ok){
+    			return response.json().then(data=>{
+    				displayErrors(data);
+    			})
+    		}
+    		else{
+    			window.location.href="/admin/view-banner";
+    		}
+    	})
+    	 .catch(error => {
+    	        console.error("Network or server error:", error);
+    	        displayError({ message: "Something went wrong. Please try again." });
+    	    });
+    })
+    
+    function displayErrors(errors) {
+  // Clear all previous errors and invalid classes
+  document.querySelectorAll('[id^="error-"]').forEach(span => {
+    span.classList.add('d-none');
+    span.innerText = '';
+    const fieldId = span.id.replace('error-', '');
+    const input = document.getElementById(fieldId);
+    if (input) input.classList.remove('is-invalid');
+  });
+
+  // Set new errors
+  for (const [fieldId, message] of Object.entries(errors)) {
+    const errorSpan = document.getElementById('error-' + fieldId);
+    const input = document.getElementById(fieldId);
+    if (errorSpan && input) {
+      errorSpan.innerText = message;
+      errorSpan.classList.remove('d-none');
+      input.classList.add('is-invalid');
+    }
+  }
+    }
+    </script>
+    
+</div>
+
+</body>
+</html>
+
+
+
