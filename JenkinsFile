@@ -1,48 +1,37 @@
 pipeline {
-    agent any
+  agent any
+  options {
+    timeout(time: 5, unit: 'MINUTES')
+  }
 
-    stages {
-        stage('Clone') {
-            steps {
-                git url: 'https://github.com/Akin321/IronWeb.git', branch: 'main'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                script {
-                    def buildStatus = sh(script: 'mvn clean package -DskipTests', returnStatus: true)
-                    if (buildStatus != 0) {
-                        error "Build failed with exit code ${buildStatus}"
-                    }
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sshagent (credentials: ['0cb6fa5e-b06b-46ee-af98-a518fdf5e187']) {
-                    script {
-                        def scpStatus = sh(script: 'scp -o StrictHostKeyChecking=no target/Iron-1.0.0.jar ubuntu@13.60.3.172:/home/ubuntu/Iron.jar', returnStatus: true)
-                        if (scpStatus != 0) {
-                            echo "SCP failed with exit code ${scpStatus}"
-                            error "Deployment failed at SCP step"
-                        }
-                        
-                        def killStatus = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@13.60.3.172 'pkill -f \"java -jar\" || true'", returnStatus: true)
-                        if (killStatus != 0) {
-                            echo "Warning: Could not kill existing Java process (exit code ${killStatus})"
-                            // Don't fail pipeline here, just warning
-                        }
-
-                        def runStatus = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@13.60.3.172 'nohup java -jar /home/ubuntu/Iron.jar > /home/ubuntu/Iron.log 2>&1 &'", returnStatus: true)
-                        if (runStatus != 0) {
-                            echo "Failed to start the Java application (exit code ${runStatus})"
-                            error "Deployment failed at run step"
-                        }
-                    }
-                }
-            }
-        }
+  stages {
+    stage('Clone') {
+      steps {
+        git url: 'https://github.com/Akin321/IronWeb.git', branch: 'main'
+      }
     }
+
+    stage('Build') {
+      steps {
+        sh 'mvn clean package -DskipTests'
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        sshagent(['0cb6fa5e-b06b-46ee-af98-a518fdf5e187']) {
+          sh '''
+          echo "Copying JAR to EC2..."
+          scp -o StrictHostKeyChecking=no target/Iron-1.0.0.jar ubuntu@51.21.243.15:/home/ubuntu/Iron.jar || { echo "SCP failed"; exit 1; }
+
+          echo "Killing existing Java processes..."
+          ssh -o StrictHostKeyChecking=no ubuntu@51.21.243.15 'pkill -f "java -jar" || echo "No process to kill"'
+
+          echo "Starting new Spring Boot app..."
+          ssh -o StrictHostKeyChecking=no ubuntu@51.21.243.15 'nohup java -jar /home/ubuntu/Iron.jar > Iron.log 2>&1 &' || { echo "App failed to start"; exit 1; }
+          '''
+        }
+      }
+    }
+  }
 }
