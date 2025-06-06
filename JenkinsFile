@@ -1,10 +1,9 @@
-
 pipeline {
     agent any
 
     environment {
         JAR_NAME = "Iron-0.0.1-SNAPSHOT.jar"
-        PROFILE = "prod"            
+        PROFILE = "prod"
         PORT = "8080"
     }
 
@@ -13,13 +12,15 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Cloning GitHub repository..."
-                git url: 'https://github.com/Akin321/IronWeb.git'
+                git branch: 'main', url: 'https://github.com/Akin321/IronWeb.git'
             }
         }
 
         stage('Build') {
             steps {
                 echo "Building the Spring Boot app with Maven..."
+                // Give execution permission to wrapper if not already
+                sh 'chmod +x mvnw'
                 sh './mvnw clean package -DskipTests'
             }
         }
@@ -29,11 +30,11 @@ pipeline {
                 echo "Deploying application..."
 
                 sh '''
-                    echo "Killing any running instance..."
+                    echo "Killing any running instance of the app (if any)..."
                     pkill -f $JAR_NAME || true
 
-                    echo "Starting new instance..."
-                    nohup java -jar target/$JAR_NAME --server.port=$PORT --spring.profiles.active=$PROFILE &
+                    echo "Starting new instance of the app..."
+                    nohup java -jar target/$JAR_NAME --server.port=$PORT --spring.profiles.active=$PROFILE > app.log 2>&1 &
                 '''
             }
         }
@@ -48,4 +49,3 @@ pipeline {
         }
     }
 }
-
