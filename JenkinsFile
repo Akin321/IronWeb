@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 pipeline {
     agent any
 
@@ -41,13 +41,11 @@ pipeline {
 
     post {
         success {
-            echo "✅ Build & deployment successful!"
+            echo " Build & deployment successful!"
         }
         failure {
-            echo "❌ Build failed!"
+            echo " Build failed!"
         }
     }
 }
-=======
 
->>>>>>> 36279b2b5119ec7a5b899d56cf213dcae8cb93bf
