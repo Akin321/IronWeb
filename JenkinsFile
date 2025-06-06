@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        JAR_NAME = "Iron.jar"        // Replace with actual jar name
+        PROFILE = "prod"                // Or dev/staging/etc.
+        PORT = "8080"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "Cloning GitHub repository..."
+                git url: 'https://github.com/Akin321/IronWeb.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building the Spring Boot app with Maven..."
+                sh './mvnw clean package -DskipTests'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying application..."
+
+                sh '''
+                    echo "Killing any running instance..."
+                    pkill -f $JAR_NAME || true
+
+                    echo "Starting new instance..."
+                    nohup java -jar target/$JAR_NAME --server.port=$PORT --spring.profiles.active=$PROFILE &
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Build & deployment successful!"
+        }
+        failure {
+            echo "❌ Build failed!"
+        }
+    }
+}
