@@ -18,13 +18,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh './mvnw clean package -DskipTests'
-            }
+				bat './mvnw clean package -DskipTests'            }
         }
 
         stage('Deploy to EC2') {
             steps {
-                sh """
+                bat """
                     scp -i $PEM_PATH target/$JAR_NAME $EC2_USER@$EC2_HOST:$EC2_PATH
                     ssh -i $PEM_PATH $EC2_USER@$EC2_HOST 'pkill -f $JAR_NAME || true && nohup java -jar $JAR_NAME > app.log 2>&1 &'
                 """
