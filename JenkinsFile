@@ -27,13 +27,12 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 sh """
-                    chmod 400 $PEM_PATH
-
-                    scp -i $PEM_PATH -o StrictHostKeyChecking=no target/$JAR_NAME $EC2_USER@$EC2_HOST:$EC2_PATH
-                    ssh -i $PEM_PATH -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST '
-                        pkill -f $JAR_NAME || true
-                        nohup java -jar $EC2_PATH$JAR_NAME > app.log 2>&1 &
-                    '
+                    
+			            echo 'Deploying JAR to EC2...'
+			            chmod 400 $PEM_PATH
+			            scp -i $PEM_PATH -o StrictHostKeyChecking=no target/$JAR_NAME $EC2_USER@$EC2_HOST:$EC2_PATH
+			            ssh -i $PEM_PATH -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'pkill -f $JAR_NAME || true && nohup java -jar $EC2_PATH$JAR_NAME > app.log 2>&1 &'
+			        
                 """
             }
         }
