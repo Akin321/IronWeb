@@ -22,13 +22,16 @@ pipeline {
             }
         }
 
-        stage('Deploy to EC2') {
-            steps {
-                sh """
-                    scp -i $PEM_PATH -o StrictHostKeyChecking=no target/$JAR_NAME $EC2_USER@$EC2_HOST:$EC2_PATH
-                    ssh -i $PEM_PATH -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'pkill -f $JAR_NAME || true && nohup java -jar $EC2_PATH$JAR_NAME > app.log 2>&1 &'
-                """
-            }
-        }
+       stage('Deploy to EC2') {
+	    steps {
+	        sshagent(credentials: ['ec2-ssh-key']) {
+	            sh """
+	                scp -o StrictHostKeyChecking=no target/$JAR_NAME $EC2_USER@$EC2_HOST:$EC2_PATH
+	                ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'pkill -f $JAR_NAME || true && nohup java -jar $JAR_NAME > app.log 2>&1 &'
+	            """
+	        }
+    	}
+	}
+
     }
 }
