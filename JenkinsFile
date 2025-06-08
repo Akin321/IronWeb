@@ -7,7 +7,7 @@ pipeline {
         EC2_HOST = "13.201.157.44"
         EC2_PATH = "/home/ec2-user/"
         // Use Unix-style path (forward slashes) and escape spaces
-        PEM_PATH = "/c/Users/HP/Downloads/ironkeypair.pem"
+        PEM_PATH = "/mnt/c/Users/HP/Downloads/ironkeypair.pem"
     }
 
     stages {
