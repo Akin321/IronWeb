@@ -93,7 +93,7 @@ public class userProfileController {
 				String referralLink=userService.getReferralCode(user);
 				model.addAttribute("user", user);
 				model.addAttribute("referralLink", referralLink);
-				return "/user/userProfile";
+				return "user/userProfile";
 			}
 			else {
 				redirectAttributes.addFlashAttribute("successMessage","please login to view profile features");
@@ -116,7 +116,7 @@ public class userProfileController {
 					NewUserModel user=userService.findUser(email);
 					String referralLink=userService.getReferralCode(user);
 					model.addAttribute("referralLink", referralLink);
-					return "/user/refer";
+					return "user/refer";
 
 			}
 				else {
@@ -268,7 +268,7 @@ public class userProfileController {
 	public String ChangePassword(Model model) {
 		PasswordForm passwordForm=new PasswordForm();
 		model.addAttribute("passwordForm",passwordForm);
-		return "/user/userPassword";
+		return "user/userPassword";
 	}
 	
 	@PostMapping("/updatePassword")
@@ -350,7 +350,7 @@ public class userProfileController {
 			}
 			List<AddressModel> addresses=userService.getAddress(userDetails);
 			model.addAttribute("addresses",addresses);
-			return "/user/viewAddress";
+			return "user/viewAddress";
 		}
 		catch(Exception e) {
 			model.addAttribute("errorMessage", "Something unexpected happened");
@@ -363,7 +363,7 @@ public class userProfileController {
 		AddressDto addressDto=userService.setAddressDto(id);
 		
 		model.addAttribute("addressDto",addressDto);
-		return "/user/editAddress";
+		return "user/editAddress";
 	}
 	
 	@PostMapping("/update-address")

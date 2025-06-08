@@ -74,7 +74,7 @@ public class WalletController {
 			NewUserModel user=getUser(userDetails);
 			WalletModel wallet=walletService.getWallet(user);
 			model.addAttribute("wallet",wallet);
-			return "/user/wallet";
+			return "user/wallet";
 		}
 		catch(Exception e) {
 			redirectAttributes.addFlashAttribute("errorMessage","Unable to view wallet");
@@ -95,7 +95,7 @@ public class WalletController {
 				model.addAttribute("wallet",wallet);
 				model.addAttribute("amount",amount);
 				session.setAttribute("Walletamount", amount);
-				return "/user/walletCheckout";
+				return "user/walletCheckout";
 			
 		}
 		catch(Exception e) {
@@ -184,7 +184,7 @@ public class WalletController {
 			model.addAttribute("transactions",transactions);
 			model.addAttribute("currentPage",page);
 			model.addAttribute("totalPages", transactions.getTotalPages());
-			return "user/walletTransaction";
+			return "user/walletTransaction";//changed
 		}
 		catch(Exception e) {
 			 redirectAttributes.addFlashAttribute("errorMessage", "Something went wrong,cannot acess transaction");

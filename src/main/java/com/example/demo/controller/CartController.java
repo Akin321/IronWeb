@@ -114,7 +114,7 @@ public class CartController {
 		model.addAttribute("totalMrp",totalMrp);
 		model.addAttribute("totalDiscount",totalDiscount);
 		model.addAttribute("totalAmount",totalAmount);
-		return "/user/viewCart";
+		return "user/viewCart";
 	}
 	catch(Exception e) {
 		logger.error("Error occurred while viewing cart for user: {}", e.getMessage(), e);

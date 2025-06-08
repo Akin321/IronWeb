@@ -105,7 +105,7 @@ public class wishlistController {
 			Page<ProductModel> products=userService.getWishlistProducts(user_id,page,size,gender,sort,collection,fit);
 			if(!products.hasContent()) {
 				 model.addAttribute("filterApplied", isFilterApplied);
-				return "/user/viewWishlist";
+				return "user/viewWishlist";
 			}
 			List<CollectionModel> collections = userService.getProductsWithoutFilter(user_id)
 				    .stream()
@@ -132,7 +132,7 @@ public class wishlistController {
 			model.addAttribute("selectedGender",gender);
 			model.addAttribute("selectedCollections",collection);
 			model.addAttribute("selectedFits",fit);
-			return "/user/viewWishlist";
+			return "user/viewWishlist";
 		}
 		catch(Exception e) {
 			e.printStackTrace();

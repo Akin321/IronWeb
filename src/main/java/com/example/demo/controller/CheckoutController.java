@@ -341,12 +341,12 @@ public class CheckoutController {
 	 
 	 @GetMapping("/order-success/page")
 	 public String orderSuccessPage() {
-		 return "/user/order-success";
+		 return "user/order-success";
 	 }
 	 
 	 @GetMapping("/payment-failed")
 	 public String paymentFailed() {
-		return "/user/paymentFailure";
+		return "user/paymentFailure";
 	 }
 	 
 	 @PostMapping("/api/payment/mark-failed")

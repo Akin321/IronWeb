@@ -79,7 +79,7 @@ public class OrderController {
 			model.addAttribute("totalPages",orders.getTotalPages());
 			
 			
-			return "/user/order";
+			return "user/order";
 		}
 		catch(Exception e) {
 			e.printStackTrace();
