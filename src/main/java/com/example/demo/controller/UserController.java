@@ -158,7 +158,7 @@ public class UserController {
 			redirectAttributes.addFlashAttribute("errorMessage", "Session expired Please register again");
 		        return "redirect:/user/signup";
 		}
-		return "/user/verifyOtp";
+		return "user/verifyOtp";
 	}
 	
 	
@@ -237,7 +237,7 @@ public class UserController {
 	public String Login(Model model) {
 		LoginCred loginCred=new LoginCred();
 		model.addAttribute("loginCred", loginCred);
-		return "/user/login";
+		return "user/login";
 		
 	}
 	@PostMapping("/login")
@@ -245,7 +245,7 @@ public class UserController {
 		
 		
 		if(result.hasErrors()) {
-			return "/user/login";
+			return "user/login";
 		}
 		
 		   try {
@@ -258,33 +258,33 @@ public class UserController {
 				return "redirect:/user/home";
 		    } catch (UsernameNotFoundException ex) {
 		        result.rejectValue("email", "error.email", ex.getMessage());
-		        return "/user/login"; // back to login view
+		        return "user/login"; // back to login view
 		    }
 		   catch(BadCredentialsException e) {
 			   result.rejectValue("password", "error.password", e.getMessage());
-		        return "/user/login";
+		        return "user/login";
 		   }
 		   catch(Exception e) {
 			   e.printStackTrace();
 			   model.addAttribute("error","Unexpected error occured");
-			   return "/user/login";
+			   return "user/login";
 		   }
 	}
 	
 	@GetMapping("/forget-password/step1")
 	public String forgetPassword() {
-		return "/user/forgetPassword1";
+		return "user/forgetPassword1";
 	}
 	@PostMapping("/forget-password/step1")
 	public String SendMail(@RequestParam String email,Model model,RedirectAttributes redirectAttributes,HttpSession session) {
 		try {
 		if(email==null) {
 			model.addAttribute("error", "Please enter your Mail id");
-			return "/user/forgetPassword1";
+			return "user/forgetPassword1";
 		}
 		if(!userRepo.existsByEmail(email)) {
 			model.addAttribute("error", "Email does not exist");
-			return "/user/forgetPassword1";
+			return "user/forgetPassword1";
 		}
 		
 			String otp=OtpUtil.generateOtp();
@@ -421,12 +421,12 @@ public class UserController {
 		    model.addAttribute("totalPages",products.getTotalPages());
 		    model.addAttribute("selectedFits", fit);
 		    model.addAttribute("sizeTypes", Size.values());
-			return "/user/view-products";
+			return "user/view-products";
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 			model.addAttribute("errorMessage","Something Unexpected happened");
-			return "/user/view-products";
+			return "user/view-products";
 		}
 	}
 	@GetMapping("view-product/{id}")
@@ -482,12 +482,12 @@ public class UserController {
 		    model.addAttribute("totalPages",products.getTotalPages());
 		    model.addAttribute("selectedFits", fit);
 		    model.addAttribute("sizeTypes", Size.values());
-			return "/user/view-search-products";
+			return "user/view-search-products";
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 			model.addAttribute("errorMessage","Something Unexpected happened");
-			return "/user/view-search-products";
+			return "user/view-search-products";
 		}
 	
 		
@@ -526,12 +526,12 @@ public class UserController {
 		    model.addAttribute("totalPages",products.getTotalPages());
 		    model.addAttribute("selectedFits", fit);
 		    model.addAttribute("sizeTypes", Size.values());
-			return "/user/view-cat-products";
+			return "user/view-cat-products";
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 			model.addAttribute("errorMessage","Something Unexpected happened");
-			return "/user/view-cat-products";
+			return "user/view-cat-products";
 		}
 	}
 	
