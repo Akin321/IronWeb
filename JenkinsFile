@@ -6,7 +6,8 @@ pipeline {
         EC2_USER = "ec2-user"
         EC2_HOST = "13.201.157.44"
         EC2_PATH = "/home/ec2-user/"
-        PEM_PATH = "C:/Users/HP/Downloads/ironkeypair.pem"
+        // Use Unix-style path (forward slashes) and escape spaces
+        PEM_PATH = "/c/Users/HP/Downloads/ironkeypair.pem"
     }
 
     stages {
@@ -18,19 +19,22 @@ pipeline {
 
         stage('Build') {
             steps {
+                // Ensure Git Bash is used
                 sh './mvnw clean package -DskipTests'
             }
         }
 
-       stage('Deploy to EC2') {
-	    steps {
-	             sh """
-		            scp -i $PEM_PATH -o StrictHostKeyChecking=no target/$JAR_NAME $EC2_USER@$EC2_HOST:$EC2_PATH
-		            ssh -i $PEM_PATH -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'pkill -f $JAR_NAME || true && nohup java -jar $JAR_NAME > app.log 2>&1 &'
-		        """
-	        }
-    	}
-	}
-
-    
+        stage('Deploy to EC2') {
+            steps {
+                sh """
+                    echo 'Deploying JAR to EC2...'
+                    scp -i $PEM_PATH -o StrictHostKeyChecking=no target/$JAR_NAME $EC2_USER@$EC2_HOST:$EC2_PATH
+                    ssh -i $PEM_PATH -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST '
+                        pkill -f $JAR_NAME || true
+                        nohup java -jar $EC2_PATH$JAR_NAME > app.log 2>&1 &
+                    '
+                """
+            }
+        }
+    }
 }
