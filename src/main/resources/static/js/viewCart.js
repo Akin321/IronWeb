@@ -20,28 +20,21 @@ function confirmRemove(anchor) {
 function changeQty(button, delta, itemId) {
     // Get the current cart item ID from the data attribute or other logic
     const cartId = itemId; // or extract from the button if needed
+	const input = document.getElementById('qty-' + itemId);
+	    const max = parseInt(input.dataset.max);
+	    let current = parseInt(input.value);
+		if(current+delta>max){
+			toastr.warning("Only " + max + " items available in stock.");
+			    return;
+		}
+		if(current+delta>10){
+			toastr.warning("Only " + 10 + " items allowed per product");
+						    return;
+		}
     
     // Send an AJAX request to the backend
-    fetch(`/cart/update-quantity?cartId=${cartId}&delta=${delta}`, {
-        method: 'GET', // HTTP method, GET in this case
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => {
-        if (response.ok) {
-            // Optionally, refresh the cart or update the UI here
-            window.location.reload(); // Reload the page after updating the quantity
-        } else {
-            // Handle errors, show an error message, etc.
-            alert('Error updating quantity!');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Something went wrong!');
-    });
-}
+	window.location.href = `/cart/update-quantity?cartId=${cartId}&delta=${delta}`;
+       }
 
 function checkCartBeforeOrder() {
   fetch('/cart/validate', {

@@ -52,7 +52,7 @@ public class OrderItem {
 
 	    private LocalDateTime cancelDate;
 	    
-	    @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
+	    @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
 	    private ReturnRequest returnRequest;
 	    	
 	    

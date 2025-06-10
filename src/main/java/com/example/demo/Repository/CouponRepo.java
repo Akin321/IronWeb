@@ -25,4 +25,6 @@ public interface CouponRepo extends JpaRepository<CouponModel,Integer> {
 
 	Optional<CouponModel> findByCouponCodeIgnoreCaseAndStatus(String keyword, Status active);
 
+	void deleteByUser(NewUserModel user);
+
 }

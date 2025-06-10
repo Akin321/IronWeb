@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{user/profileBase}">
+
+<head>
+    <title>deleteAccount</title>
+
+</head>
+
+<body>
+<section layout:fragment="profilecontent">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4 class="mb-0">Delete Account</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-danger fw-bold">
+                        Warning: Deleting your account is permanent and cannot be undone.
+                    </p>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item">
+                            🛒 <strong>Cart Items:</strong> All items in your cart will be lost.
+                        </li>
+                        <li class="list-group-item">
+                            💰 <strong>Wallet Balance:</strong> Remaining wallet balance will be forfeited.
+                        </li>
+                        <li class="list-group-item">
+                            🎟️ <strong>Coupons:</strong> All unused coupons will be deleted.
+                        </li>
+                        <li class="list-group-item">
+                            📦 <strong>Order History:</strong> You will no longer have access to your order records.
+                        </li>
+                        <li class="list-group-item">
+                            📧 <strong>Email and login:</strong> Your email and login credentials will be removed.
+                        </li>
+                    </ul>
+                    <p class="text-muted">
+                        If you're sure you want to delete your account, click the button below. You may be asked to confirm your password.
+                    </p>
+                 
+                        <button type="button" class="btn btn-danger w-100" onclick="deleteAccount()">
+                            Permanently Delete My Account
+                        </button>
+                
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="/js/deleteAcc.js"></script>
+</section>
+
+</body>
+</html>

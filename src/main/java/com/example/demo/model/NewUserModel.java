@@ -1,7 +1,9 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,6 +11,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 
 @Entity
@@ -32,6 +36,24 @@ public class NewUserModel { //model for user and admin
 	private boolean is_active=true;
 	@Column(unique = true)
 	private String referralToken;
+	 @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	    private WalletModel wallet;
+
+	    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	    private List<CartModel> cart;
+	    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	    private List<WishlistModel> wishlist;
+
+	    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	    private List<OrderModel> orders;
+
+	    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	    private List<AddressModel> addresses;
+	    
+
+	    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	    private List<CouponModel> coupon;
+
 	
 	public NewUserModel() {
 		
@@ -39,8 +61,20 @@ public class NewUserModel { //model for user and admin
 
 	
 
+
+
+
+
+	
+
+
+
+
+
 	public NewUserModel(int id, Gender gender, String name, String image, String email, String password, String phone,
-			Role role, LocalDateTime createdAt, boolean is_active, String referralToken) {
+			Role role, LocalDateTime createdAt, boolean is_active, String referralToken, WalletModel wallet,
+			List<CartModel> cart, List<WishlistModel> wishlist, List<OrderModel> orders, List<AddressModel> addresses,
+			List<CouponModel> coupon) {
 		super();
 		this.id = id;
 		this.gender = gender;
@@ -53,7 +87,23 @@ public class NewUserModel { //model for user and admin
 		this.createdAt = createdAt;
 		this.is_active = is_active;
 		this.referralToken = referralToken;
+		this.wallet = wallet;
+		this.cart = cart;
+		this.wishlist = wishlist;
+		this.orders = orders;
+		this.addresses = addresses;
+		this.coupon = coupon;
 	}
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -11,5 +11,7 @@ import com.example.demo.model.NewUserModel;
 public interface CouponUsageRepo extends JpaRepository<CouponUsage,Integer> {
 
 	Optional<CouponUsage> findByUserAndCoupon(NewUserModel user, CouponModel coupon);
+
+	void deleteByUser(NewUserModel user);
 	
 }

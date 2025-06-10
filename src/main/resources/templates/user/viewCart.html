@@ -53,7 +53,9 @@
                   <strong>Qty:</strong>
                   <div class="input-group d-inline-flex align-items-center w-auto" th:if="${item.quantity > 0}" style="width: 130px;">
                     <button class="btn btn-outline-secondary btn-sm" type="button" th:attr="onclick=|changeQty(this, -1, '${item.id}')|">−</button>
-                    <input type="number" class="form-control form-control-sm text-center"  th:value="${item.quantity}" min="1" th:max="${item.variant.stock}" readonly>
+                    <input type="number" class="form-control form-control-sm text-center"  th:value="${item.quantity}" min="1"
+                     th:max="${item.variant.stock}" th:attr="data-max=${item.variant.stock}" th:id="'qty-' + ${item.id}"
+                      readonly>
                     <button class="btn btn-outline-secondary btn-sm" type="button" th:attr="onclick=|changeQty(this, 1, '${item.id}')|">+</button>
                   </div>
 				<div th:if="${item.quantity <= 0}" class="text-danger">Out of Stock</div>               

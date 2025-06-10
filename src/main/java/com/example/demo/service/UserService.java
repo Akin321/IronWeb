@@ -23,18 +23,24 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.example.demo.Dto.AddressDto;
 import com.example.demo.Dto.UserDto;
 import com.example.demo.Dto.UserEditDto;
 import com.example.demo.Repository.AddressRepo;
+import com.example.demo.Repository.CartRepo;
 import com.example.demo.Repository.CollectionRepo;
 import com.example.demo.Repository.CouponRepo;
+import com.example.demo.Repository.CouponUsageRepo;
+import com.example.demo.Repository.OrderItemRepo;
+import com.example.demo.Repository.OrderRepo;
 import com.example.demo.Repository.ProductImageRepo;
 import com.example.demo.Repository.ProductRepo;
 import com.example.demo.Repository.ProductTypeRepo;
 import com.example.demo.Repository.ProductVarientRepo;
 import com.example.demo.Repository.WishlistRepo;
+import com.example.demo.controller.CartController;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UserNotFoundException;
 import com.example.demo.model.AddressModel;
@@ -88,6 +94,19 @@ public class UserService {
 	  
 	  @Autowired
 	  CouponRepo couponRepo;
+	  
+	  @Autowired
+	  CouponUsageRepo couponUsageRepo;
+	  
+	  @Autowired
+	  OrderRepo orderRepo;
+	  
+	  
+	  @Autowired
+	  CartRepo cartRepo;
+	  
+		@Autowired 
+		CartController cartController;
 
 	public boolean emailExsits(String email) {
 		// TODO Auto-generated method stub
@@ -467,9 +486,29 @@ public class UserService {
 			    user.setReferralToken(UUID.randomUUID().toString());
 			    userRepo.save(user);
 			}
-			String referralLink = "http://localhost:8082/user/signup?ref=" + user.getReferralToken();
-			return referralLink;
+			String referralLink = ServletUriComponentsBuilder.fromCurrentContextPath()
+				    .path("/user/signup")
+				    .queryParam("ref", user.getReferralToken())
+				    .build()
+				    .toUriString();			
+				    		return referralLink;
 
+		}
+		public boolean validatePassword(String password) {
+			// TODO Auto-generated method stub
+			int userid=cartController.getCurrentUserId();
+			NewUserModel user=userRepo.findById(userid).orElseThrow(()->new UserNotFoundException("user not found"));
+			String encodedPassword=user.getPassword();
+			boolean isMatch=passwordEncoder.matches(password, encodedPassword);
+			return isMatch;
+		}
+		public void deleteAccount() {
+			// TODO Auto-generated method stub
+			int userid=cartController.getCurrentUserId();
+			userRepo.deleteById(userid);
+		
+
+			
 		}
 		
 		

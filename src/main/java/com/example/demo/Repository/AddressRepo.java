@@ -25,4 +25,8 @@ public interface AddressRepo extends JpaRepository<AddressModel,Integer> {
 
 	AddressModel findByUserAndIsDeliveryAddress(NewUserModel user2, boolean isDeliveryAddress);
 
+
+
+	void deleteByUser(NewUserModel user);
+
 }

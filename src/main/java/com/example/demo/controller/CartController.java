@@ -156,6 +156,7 @@ public class CartController {
 			
 		}
 		catch(Exception e) {
+			e.printStackTrace();
 			logger.error("Error occured while updating cart item quanity",e);
 			redirectAttributes.addFlashAttribute("errorMessage","Something went wrong");
 			return "redirect:/view-cart"; 

@@ -74,14 +74,14 @@
 		</div>
 		<div>
 		<h2 class="mb-4">New Arrivals</h2>
-			<a href="#" class="d-block text-end fw-semibold text-black text-decoration-none mb-2">View More →</a>
+		<!-- 	<a href="#" class="d-block text-end fw-semibold text-black text-decoration-none mb-2">View More →</a>  -->
 
 		 
 	
 		 <div class="category-card-container cont2" id="productContainer">
     <div class="category-card card2" th:each="product : ${products}">
         <div th:each="img : ${product.images}">
-            <img th:if="${img.is_main}" th:src="@{${img.image}}" alt="Product" class="img-fluid" />
+            <a th:href="@{/user/view-product/{id}(id=${product.id})}"> <img th:if="${img.is_main}" th:src="@{${img.image}}" alt="Product" class="img-fluid" /></a>
         </div>
 
         <p class="fw-semibold mt-2 mb-2" th:text="${product.name}"></p>

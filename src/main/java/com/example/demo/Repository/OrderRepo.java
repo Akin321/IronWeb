@@ -23,4 +23,6 @@ public interface OrderRepo extends JpaRepository<OrderModel,Integer>, JpaSpecifi
 
 	List<OrderModel> findByOrderDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
+	void deleteByUser(NewUserModel user);
+
 }

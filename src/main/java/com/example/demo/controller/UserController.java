@@ -6,15 +6,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,6 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -52,6 +59,9 @@ import com.example.demo.service.UserService;
 import com.example.demo.service.WalletService;
 import com.fasterxml.jackson.annotation.JsonCreator.Mode;
 
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -88,6 +98,8 @@ public class UserController {
 	@Autowired
 	BannerService bannerService;
 	
+
+	
 	@GetMapping("/base")
 	public String viewBase() {
 		return "user/base";
@@ -97,7 +109,7 @@ public class UserController {
 	public String viewHome(@RequestParam(required=false,defaultValue="Female") Gender gender,Model model) {
 		try {
 			List<ProductTypes> categories=productTypeRepo.findByGender(gender).stream().filter(category->category.getIs_active()==true).collect(Collectors.toList());
-			List<ProductModel> products=productRepo.findAll().stream().limit(5).sorted(Comparator.comparing(ProductModel::getCreateAt).reversed()).collect(Collectors.toList());
+			List<ProductModel> products=productRepo.findAll().stream().sorted(Comparator.comparing(ProductModel::getCreateAt).reversed()).limit(5).collect(Collectors.toList());
 			List<BannerModel> banners=bannerService.getActiveBanners();
 			model.addAttribute("products", products); 
 			model.addAttribute("categories", categories);
@@ -254,7 +266,6 @@ public class UserController {
 		        UserDetails userdetails = userDetailsService.loadUserByUsername(loginCred.getEmail());
 		        String token=jwtService.generateToken(userdetails);
 				session.setAttribute("jwttoken", token);
-				   System.out.println(token);
 				return "redirect:/user/home";
 		    } catch (UsernameNotFoundException ex) {
 		        result.rejectValue("email", "error.email", ex.getMessage());
@@ -541,6 +552,39 @@ public class UserController {
 		return "redirect:/user/home";
 	}
 
+	@GetMapping("/delete-account-page")
+	public String deleteAccount() {
+		return "user/deleteAccount";
+	}
+	
+	@PostMapping("/validate-password")
+	@ResponseBody
+	public ResponseEntity<?> validatePasswordController(@RequestBody Map<String, String> request) {
+	    String password = request.get("password");
+
+		boolean isValid=userService.validatePassword(password);
+		if(isValid) {
+			return ResponseEntity.ok().body("valid");
+		}
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("not vaild password");
+		
+	}
+	@GetMapping("/delete-account")
+	public String deleteUser(HttpSession session,RedirectAttributes redirectAttributes,HttpServletRequest request,HttpServletResponse response) {
+		try {
+			userService.deleteAccount();
+			 session.invalidate();
+
+			   return "redirect:/user/home";		}
+		catch(Exception e) {
+			e.printStackTrace();
+			redirectAttributes.addFlashAttribute("errorMessage","error occured while deleting Account");
+			return "redirect:/user/delete-account-page";
+
+		}
+	
+		
+	}
 
 	
 }

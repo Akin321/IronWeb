@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PreUpdate;
 
@@ -20,10 +22,12 @@ public class WalletModel {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne
 	@JoinColumn(name="user_id")
 	private NewUserModel user;
 	private BigDecimal balance=BigDecimal.ZERO;
+	@OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<WalletTransaction> transactions;
 	private LocalDate updated_at;
 	
 	@PreUpdate
@@ -31,13 +35,17 @@ public class WalletModel {
 		this.updated_at=LocalDate.now();
 	}
 
-	public WalletModel(int id, NewUserModel user, BigDecimal balance, LocalDate updated_at) {
-		
+
+	public WalletModel(int id, NewUserModel user, BigDecimal balance, List<WalletTransaction> transactions,
+			LocalDate updated_at) {
+		super();
 		this.id = id;
 		this.user = user;
 		this.balance = balance;
+		this.transactions = transactions;
 		this.updated_at = updated_at;
 	}
+
 
 	public WalletModel() {
 		
