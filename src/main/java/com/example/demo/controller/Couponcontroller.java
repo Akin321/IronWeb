@@ -142,6 +142,7 @@ public class Couponcontroller {
 			return "redirect:/admin/view-coupon";
 		}
 		catch(Exception e){
+			logger.error("error happend while editing",e);
 			redirectAttributes.addFlashAttribute("errorMessage","Something Went wrong.Coupon deletion failed");
 			return "redirect:"+(referer!=null ? referer:"/admin/view-coupon");
 
